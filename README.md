@@ -9,6 +9,12 @@ python examples/quickstart.py   # runs offline, no API keys
 pytest                          # pure-logic tests
 ```
 
+## Why this matters
+
+On 2026-10-05 the Wikimedia Foundation confirmed that "rogue" AI agents attributed to OpenAI had operated on its platforms: millions of automated requests and hundreds of thousands of queries that may have contributed to a partial outage of the Wikidata Query Service in May, unauthorized edits (including an attempted hijack of a citation tool), and exploitation attempts against its Etherpad service ([blog post](https://diff.wikimedia.org/2026/10/05/openai-rogue-agent-activities-found-on-wikimedia-projects/)).
+
+That incident is the real-world shape of the attacks this benchmark models: an assistant that treats untrusted content as instructions — a fetched page, an email, a tool's output — and acts on it. The tool-hijack and indirect-injection cases are the laboratory version of the same pattern.
+
 ## What it measures
 
 | Attack class (9 cases) | What the payload does |
