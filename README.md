@@ -48,22 +48,27 @@ payload arrives as untrusted content, not for the user's own words.
 
 ## Results
 
-Headline numbers (full table in `report.md`):
+Headline numbers (full tables in `report.md`):
 
-| Defense | Overall ASR |
-|---|---|
-| none (baseline) | 100% |
-| system-hardening | 0% |
-| delimiter-wrap | 67% |
-| keyword-filter | 22% |
-| llm-judge-gate | 0% |
-| combined | 0% |
+| Defense | Overall ASR | Benign pass rate |
+|---|---|---|
+| none (baseline) | 100% | 100% |
+| system-hardening | 0% | 100% |
+| delimiter-wrap | 67% | 100% |
+| keyword-filter | 22% | 88% |
+| llm-judge-gate | 0% | 88% |
+| combined | 0% | 88% |
 
-The takeaway: blocklists and delimiters each have a blind spot —
+Two takeaways. First, blocklists and delimiters each have a blind spot —
 `keyword-filter` falls to encoding evasion and multi-turn setups,
 `delimiter-wrap` does nothing for direct overrides. Only the hardened
 prompt, the judge gate, and the combined stack held at zero across
 all 9 attacks.
+
+Second, the 0% ASR club isn't free: `keyword-filter` and `llm-judge-gate`
+both block a harmless "decode this base64" request — a real false positive
+the benchmark catches because it also runs 8 benign tasks. A defense that
+stops everything scores 0% ASR and is still unusable; both numbers matter.
 
 ## The mock target
 

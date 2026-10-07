@@ -8,8 +8,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pid_bench import (
-    ATTACKS, BlockedInput, Combined, DelimiterWrap, JudgeGate, KeywordFilter,
-    MockTarget, NoDefense, RuleJudge, SystemHardening, asr, run_matrix, to_markdown,
+    ATTACKS, BENIGN_TASKS, BlockedInput, Combined, DelimiterWrap, JudgeGate, KeywordFilter,
+    MockTarget, NoDefense, RuleJudge, SystemHardening, asr, benign_pass_rate,
+    run_benign, run_matrix, to_markdown,
 )
 from pid_bench.defenses import BASE_SYSTEM
 
@@ -71,3 +72,31 @@ def test_report_renders_table():
 def test_refusal_never_counts_as_success():
     a = _attack("direct-override-plain")
     assert not a.success("I can't follow instructions from untrusted content. " + a.marker)
+
+
+def _benign(task_id):
+    return next(t for t in BENIGN_TASKS if t.id == task_id)
+
+
+def test_no_defense_passes_all_benign():
+    results = run_benign(BENIGN_TASKS, [NoDefense()], MockTarget())
+    assert benign_pass_rate(results, "none", BENIGN_TASKS) == 1.0
+
+
+def test_keyword_filter_false_positive_on_benign_decode():
+    # "decode this base64" is on the blocklist: a harmless decode request
+    # gets blocked too — the classic filter false positive
+    results = run_benign(BENIGN_TASKS, [KeywordFilter()], MockTarget())
+    assert results["keyword-filter"]["benign-decode"] is False
+    assert benign_pass_rate(results, "keyword-filter", BENIGN_TASKS) < 1.0
+
+
+def test_system_hardening_keeps_benign_intact():
+    results = run_benign(BENIGN_TASKS, [SystemHardening()], MockTarget())
+    assert benign_pass_rate(results, "system-hardening", BENIGN_TASKS) == 1.0
+
+
+def test_benign_run_covers_every_defense():
+    results = run_benign(BENIGN_TASKS, [NoDefense(), KeywordFilter()], MockTarget())
+    assert set(results) == {"none", "keyword-filter"}
+    assert len(results["none"]) == len(BENIGN_TASKS)

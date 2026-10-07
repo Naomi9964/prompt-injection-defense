@@ -1,17 +1,25 @@
-# Quickstart: run the full matrix with the mock target and print the report.
-# No API keys needed.
+# Quickstart: run the attack matrix and the benign tasks with the mock
+# target, then print both reports. No API keys needed.
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pid_bench import ATTACKS, DEFENSES, MockTarget, RuleJudge, run_matrix, to_markdown
+from pid_bench import (
+    ATTACKS, BENIGN_TASKS, DEFENSES, MockTarget, RuleJudge,
+    benign_markdown, run_benign, run_matrix, to_markdown,
+)
 
 
 def main():
-    results = run_matrix(ATTACKS, DEFENSES, MockTarget(), RuleJudge())
-    md = "# Prompt Injection Defense Benchmark\n\n" + to_markdown(results, ATTACKS) + "\n"
+    target = MockTarget()
+    attack_results = run_matrix(ATTACKS, DEFENSES, target, RuleJudge())
+    benign_results = run_benign(BENIGN_TASKS, DEFENSES, target)
+    md = ("# Prompt Injection Defense Benchmark\n\n"
+          + to_markdown(attack_results, ATTACKS) + "\n\n"
+          + "## Benign tasks\n\n"
+          + benign_markdown(benign_results, BENIGN_TASKS) + "\n")
     print(md)
     out = Path(__file__).resolve().parents[1] / "report.md"
     out.write_text(md)
